@@ -206,16 +206,123 @@ app = FastAPI()
 #     }
 
 
-class UserResponse(BaseModel):
-    name:str
-    age:int
+# class UserResponse(BaseModel):
+#     name:str
+#     age:int
 
 
-@app.get("/user", response_model=UserResponse)
-def get_user():
+# @app.get("/user", response_model=UserResponse)
+# def get_user():
+#     return{
+#         "name" : "Mohit",
+#         "age" : 24,
+#         "password": 123456
+#     }
+
+
+# from fastapi import FastAPI,status,HTTPException
+# app = FastAPI()
+
+# @app.post("/create_user",status_code= status.HTTP_201_CREATED)
+# def create_user():
+#     return{
+#         "message":"User Created"
+#     }
+
+# @app.get("/user")
+# def get_user():
+#     return{
+#          "status": "Success",
+    
+#          "message": "User Fetched",
+#          "data":{
+#              "name": "Mohit",
+#              "age": 24
+#          }
+
+#     }
+
+# #error handling
+# @app.get("/users/{user_id}")
+# def get_user(user_id:int):
+#     if user_id != 1:
+#         raise HTTPException(
+#             status_code=404,
+#             detail='User Not Found'
+#         )
+#     return{
+#         "id": 1,
+#         "name":"Mohit"
+#     }
+
+
+
+# from fastapi import FastAPI,HTTPException
+# app= FastAPI()
+
+# class UserNotFoundexception(Exception):
+#      def __init_(self,name:str):
+#          self.name=name
+
+# @app.get("/user/{name}")
+# def get_user(name:str):
+#     if name != "mohit":
+#         raise UserNotFoundexception(name)
+#     return{
+#         "name":name
+#     }\
+
+# @app.get("/user/{user_id}")
+# def get_user(user_id:int):
+#     if user_id != 1:
+#         raise HTTPException(
+#             status_code=404,
+#             detail="User Not Found"
+#         )
+#     return{
+#         "id":1,
+#         "name":"Mohit"
+# )
+
+
+from fastapi import FastAPI, Depends,Header,HTTPException
+app=FastAPI()
+
+# def common_logic():
+#     return{
+#          "message":"Commom Logic executed"
+#     }
+# @app.get("/home")
+# def home(data = Depends (common_logic)):
+#     return data
+
+
+# def get_current_user():
+#     return{
+#        "user":"Mohit"
+#     }
+
+# @app.get("/profile")
+# def profile(user=Depends(get_current_user)):
+#     return user
+
+# @app.get("/dashboard")
+# def profile(user=Depends(get_current_user)):
+#     return user
+
+def varify_token(token:str = Header(None)):
+    if token != "mysecrettoken":
+        raise HTTPException(
+            status_code =401,
+            detail="unauthorized"
+        )
     return{
-        "name" : "Mohit",
-        "age" : 24,
-        "password": 123456
+        "user" : "Authorized User"
     }
 
+@app.get("/secure-data")
+def secure_data(user = Depends(varify_token)):
+    return{
+         "message" : "Secure data accessed",
+         "user": user
+    }
