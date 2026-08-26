@@ -310,19 +310,183 @@ app=FastAPI()
 # def profile(user=Depends(get_current_user)):
 #     return user
 
-def varify_token(token:str = Header(None)):
-    if token != "mysecrettoken":
-        raise HTTPException(
-            status_code =401,
-            detail="unauthorized"
-        )
+# def varify_token(token:str = Header(None)):
+#     if token != "mysecrettoken":
+#         raise HTTPException(
+#             status_code =401,
+#             detail="unauthorized"
+#         )
+#     return{
+#         "user" : "Authorized User"
+    # }
+
+# @app.get("/secure-data")
+# def secure_data(user = Depends(varify_token)):
+#     return{
+#          "message" : "Secure data accessed",
+#          "user": user
+#     }
+
+#MIDDLEWARE
+from fastapi import FastAPI,Request
+app= FastAPI()
+# @app.middleware("http")
+# async def log_middleware(request:Request,call_next):
+#     start_time = time.time()
+
+#     responce = await call_next(request)
+
+#     process_time = time.time()-start_time
+
+#     print(f"Path:{request.url.path}|Time:{process_time}")
+
+#     return response
+
+
+
+# @app.middleware("http")
+# async def my_middleware(request:Request,call_next):
+#     print("Request Recieved")
+
+#     response = await call_next(request)
+
+#     print("Response Sent")
+
+#     return response
+
+
+#=============================================================================================================================================
+#sqlite
+#=============================================================================================================================================
+import sqlite3
+from fastapi import FastAPI
+app = FastAPI()
+conn = sqlite3.connect("test.db",check_same_thread=False)
+cursor = conn.cursor()
+cursor=conn.cursor()
+cursor.execute("""  
+ CREATE TABLE IF NOT EXISTS todos(
+         id INTEGER PRIMARY KEY,  title TEXT,
+         completed TEXT
+      )
+  """)
+conn.commit()
+
+@app.get("/")
+def home():
+     return{
+         "message": "SQLite Connected fine"
+     }
+
+from sqlalchemy import create_engine,Column,Integer,String
+from sqlalchemy.orm import sessionmaker, declarative_base,Session
+from fastapi import FastAPI, Depends
+
+app=FastAPI()
+Base = declarative_base()
+DATABASE_URL = "sqlite:///./test.db"
+
+engine = create_engine (  
+   DATABASE_URL,
+   connect_args={"check_same_thread": False}
+
+ )
+
+sessionLocal = sessionmaker(bind=engine)
+
+class Todo (Base):
+    __tablename__  = "todos"
+    id = Column(Integer, primary_key=True, index=True)
+    title = Column(String)
+    completed = Column(String)
+
+Base.metadata.create_all(bind=engine)
+
+
+# def get_db():
+#   db = sessionLocal()
+#   try:
+#      yield db
+#   finally:
+#       db.close()
+
+# @app.get("/")
+# def home(db: Session = Depends (get_db)):
+#     return{
+#         "message":"DB connected fine"
+#     }
+
+
+
+Base.metadata.create_all(bind=engine)
+
+#Dependency (DB session provide karega)
+def get_db():
+    db = sessionLocal()
+    try:
+        yield db
+    finally:
+        db.close()
+
+@app.post("/todos")
+def create_todo(title:str,db:Session = Depends(get_db)):
+    todo = Todo(title=title,completed="False")
+    db.add(todo)
+    db.commit()
+    db.refresh(todo)
     return{
-        "user" : "Authorized User"
+         "message":"Todo Created",
+         "data": todo
+
+
     }
 
-@app.get("/secure-data")
-def secure_data(user = Depends(varify_token)):
-    return{
-         "message" : "Secure data accessed",
-         "user": user
-    }
+# #reas all data
+# @app.get("/todos")
+# def get_todos(db:Session =depends(get_db)):
+#     todos = db.query(Todo).all()
+
+#     return{
+#         "Total": len(todos),
+#         "data":todos
+#     }
+
+
+# @app.get("/todos/{todo_id}")
+# def get_todo(todo_id=int,db:Session = Depends(get_db)):
+#     todo = db.query(Todo).filter(Todo.id ==todo_id).first()
+
+#     if not todo:
+#         raise HTTPException(status_code=404,detail = "Todo not found")
+#     return todo
+
+# @app.put("/todos/{todo_id}")
+# def update_todo(todo_id:int,tittle:str,db:Session=Depends(get_db)):
+#     todo = db.query(Todo).filter(Todo.id == todo_id).first()
+
+#     if not todo:
+#             raise HTTPException(status_code=404,detail = "Todo not found")
+#         return todo
+#     todo.title=title
+# db.commit()
+# return{
+#      "message":"Todo Updated  "  
+#      "data" :todo
+#      }
+
+# #update
+# @app.put("?todos/{todo_id}")
+# def update_todo(todo_id:int,title:str,db:Session=Depends(get_db)):
+#     todo=db.query(Todo).filter(Todo.id == todo_id).first()
+
+#     if not todo:
+#         raise HTTPException(status_code=404,detail = "Todo not found")
+#         return todo
+#     db.delete(todo)
+#     db.commit()
+
+#     return{
+#         "message":"Todo DELETED"
+#     }
+        
+   
