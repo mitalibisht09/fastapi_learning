@@ -137,7 +137,7 @@ app=FastAPI()
 # @app.post("/todos")
 # def create_todo(todo:Todo):
 #     todos.append(todo)
-#     return{"message":"TODO added","data":todo}
+#     return{"message":"Todo added","data":todo}
 
 
 
@@ -173,9 +173,9 @@ app=FastAPI()
 
 
 
-from fastapi import FastAPI
-from pydantic import BaseModel
-app = FastAPI()
+# from fastapi import FastAPI
+# from pydantic import BaseModel
+# app = FastAPI()
 
 # users=[]
 
@@ -358,49 +358,49 @@ app= FastAPI()
 #=============================================================================================================================================
 #sqlite
 #=============================================================================================================================================
-import sqlite3
-from fastapi import FastAPI
-app = FastAPI()
-conn = sqlite3.connect("test.db",check_same_thread=False)
-cursor = conn.cursor()
-cursor=conn.cursor()
-cursor.execute("""  
- CREATE TABLE IF NOT EXISTS todos(
-         id INTEGER PRIMARY KEY,  title TEXT,
-         completed TEXT
-      )
-  """)
-conn.commit()
+# import sqlite3
+# from fastapi import FastAPI
+# app = FastAPI()
+# conn = sqlite3.connect("test.db",check_same_thread=False)
+# cursor = conn.cursor()
+# cursor=conn.cursor()
+# cursor.execute("""  
+#  CREATE TABLE IF NOT EXISTS todos(
+#          id INTEGER PRIMARY KEY,  title TEXT,
+#          completed TEXT
+#       )
+#   """)
+# conn.commit()
 
-@app.get("/")
-def home():
-     return{
-         "message": "SQLite Connected fine"
-     }
+# @app.get("/")
+# def home():
+#      return{
+#          "message": "SQLite Connected fine"
+#      }
 
-from sqlalchemy import create_engine,Column,Integer,String
-from sqlalchemy.orm import sessionmaker, declarative_base,Session
-from fastapi import FastAPI, Depends
+# from sqlalchemy import create_engine,Column,Integer,String
+# from sqlalchemy.orm import sessionmaker, declarative_base,Session
+# from fastapi import FastAPI, Depends
 
-app=FastAPI()
-Base = declarative_base()
-DATABASE_URL = "sqlite:///./test.db"
+# app=FastAPI()
+# Base = declarative_base()
+# DATABASE_URL = "sqlite:///./test.db"
 
-engine = create_engine (  
-   DATABASE_URL,
-   connect_args={"check_same_thread": False}
+# engine = create_engine (  
+#    DATABASE_URL,
+#    connect_args={"check_same_thread": False}
 
- )
+#  )
 
-sessionLocal = sessionmaker(bind=engine)
+# sessionLocal = sessionmaker(bind=engine)
 
-class Todo (Base):
-    __tablename__  = "todos"
-    id = Column(Integer, primary_key=True, index=True)
-    title = Column(String)
-    completed = Column(String)
+# class Todo (Base):
+#     __tablename__  = "todos"
+#     id = Column(Integer, primary_key=True, index=True)
+#     title = Column(String)
+#     completed = Column(String)
 
-Base.metadata.create_all(bind=engine)
+# Base.metadata.create_all(bind=engine)
 
 
 # def get_db():
@@ -418,28 +418,28 @@ Base.metadata.create_all(bind=engine)
 
 
 
-Base.metadata.create_all(bind=engine)
+# Base.metadata.create_all(bind=engine)
 
-#Dependency (DB session provide karega)
-def get_db():
-    db = sessionLocal()
-    try:
-        yield db
-    finally:
-        db.close()
+# #Dependency (DB session provide karega)
+# def get_db():
+#     db = sessionLocal()
+#     try:
+#         yield db
+#     finally:
+#         db.close()
 
-@app.post("/todos")
-def create_todo(title:str,db:Session = Depends(get_db)):
-    todo = Todo(title=title,completed="False")
-    db.add(todo)
-    db.commit()
-    db.refresh(todo)
-    return{
-         "message":"Todo Created",
-         "data": todo
+# @app.post("/todos")
+# def create_todo(title:str,db:Session = Depends(get_db)):
+#     todo = Todo(title=title,completed="False")
+#     db.add(todo)
+#     db.commit()
+#     db.refresh(todo)
+#     return{
+#          "message":"Todo Created",
+#          "data": todo
 
 
-    }
+#     }
 
 # #reas all data
 # @app.get("/todos")
@@ -488,5 +488,99 @@ def create_todo(title:str,db:Session = Depends(get_db)):
 #     return{
 #         "message":"Todo DELETED"
 #     }
-        
-   
+
+# import time
+# import asyncio
+# from fastapi import FastAPI
+# app=FastAPI()
+
+# @app.get("/")
+# async def home():
+#     await asyncio.sleep(3)
+#     return{
+#         "message":"Async API"
+#     }
+
+
+# def task():
+#     time.sleep(3)
+#     return "Done"
+
+#AUTHENTICATION BASICS
+# from fastapi import FastAPI,HTTPException,Depends,Header
+# from jose import jwt
+# from datetime import datetime, timedelta
+
+# app=FastAPI()
+
+# SECRET_KEY = "mysecret"
+# ALGORITHM = "HS256"
+# def create_token(data:dict):
+#     to_encode = data.copy()
+#     expire=datetime.utcnow() +timedelta(minutes=30)
+#     to_encode.update({
+#         "exp":expire
+#     })
+#     token = jwt.encode(to_encode,SECRET_KEY,algorithm=ALGORITHM)
+#     return token
+
+# # Logon API(Token GEnerate)
+# @app.post("/login")
+# def login(username:str,passsword:str):
+#     if username != "admin" or passsword != "1234":
+#         raise HTTPException(
+#             status_code=401,
+#             detail="Invalid Usename and password"
+
+#         )
+#     token = create_token({
+#          "sub": username
+#     })
+#     return{
+#         "access_token":token
+#     }
+
+# #Token varify
+# def varify_token(token:str=Header(None)):
+#     try:
+#         payload = jwt.decode(token,SECRET_KEY,algorithms=[ALGORITHM])
+#         return payload
+#     except:
+#         raise HTTPException(
+#             status_code=401,
+#             detail="Invalid orexpired token"
+#         )
+# #protected Route
+# @app.get("/secure")
+# def secure_data(user=Depends(varify_token)):
+#     return{
+#         "message":"Secure  Data Accessed",
+#         "user":user
+
+#     }
+from fastapi import FastAPI,HTTPException,Depends,Header
+from jose import jwt
+from fastapi.security import OAuth2PasswordBearer,OAuth2PasswordRequestForm
+from datetime import datetime, timedelta
+app=FastAPI()
+from passlib.context import cryptContext
+
+#JWT Config
+SECRET_KEY = "mysecret"
+ALGORITHM = "HS256"
+ACCESS_TOKEN_EXPIRE_MINUTES = 30
+
+#password hashing SETup
+pwd_context = CryptContext(schemes=["bycrypt"])
+
+oauth2_schema = OAuth2PasswordBearer(tokenUrl="login")
+
+fake_user_db ={
+     "admin":{
+         "username":"admin"
+         "hasheed_pasword":pwd_context.hash("1234")
+         
+     }
+
+
+}
