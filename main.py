@@ -558,29 +558,162 @@ app= FastAPI()
 #         "user":user
 
 #     }
-from fastapi import FastAPI,HTTPException,Depends,Header
-from jose import jwt
-from fastapi.security import OAuth2PasswordBearer,OAuth2PasswordRequestForm
-from datetime import datetime, timedelta
-app=FastAPI()
-from passlib.context import cryptContext
+# from fastapi import FastAPI,HTTPException,Depends,Header
+# from jose import jwt
+# from fastapi.security import OAuth2PasswordBearer,OAuth2PasswordRequestForm
+# from datetime import datetime, timedelta
+# app=FastAPI()
+# from passlib.context import cryptContext
 
-#JWT Config
-SECRET_KEY = "mysecret"
-ALGORITHM = "HS256"
-ACCESS_TOKEN_EXPIRE_MINUTES = 30
+# #JWT Config
+# SECRET_KEY = "mysecret"
+# ALGORITHM = "HS256"
+# ACCESS_TOKEN_EXPIRE_MINUTES = 30
 
-#password hashing SETup
-pwd_context = CryptContext(schemes=["bycrypt"])
+# #password hashing SETup
+# pwd_context = CryptContext(schemes=["bycrypt"])
 
-oauth2_schema = OAuth2PasswordBearer(tokenUrl="login")
+# oauth2_schema = OAuth2PasswordBearer(tokenUrl="login")
 
-fake_user_db ={
-     "admin":{
-         "username":"admin"
-         "hasheed_pasword":pwd_context.hash("1234")
+# fake_user_db ={
+#      "admin":{
+#          "username":"admin",
+#          "hasheed_pasword":pwd_context.hash("1234")
          
-     }
+#      }
 
 
-}
+# }
+# #Hash Password
+# def hash_password(password:str):
+#     return pwd_context.hash(password)
+
+# #varify password
+# def varify_password(plain_password,hased_passsword):
+#     return pwd_context.verify(plain_password,hased_password)
+
+# #Create Token
+# def create_token(data:dict):
+#     to_encode=data.copy()
+#     expire = datetime.now(timezone.utc) + timedelta(minute=30)
+#     to_encode.update({
+#             "exp":expire
+#     })
+#     token = jwt.encode(to_encode,SECRET_KEY,algorithm=ALGORITHM)
+#     return token
+
+# #Login API
+# @app.post("/login")
+# def login(from_data:OAuth2PasswordRequestForm=Depends()):
+#     user =fake_user_db.get(from_data.username)
+#     if not user or not verify_password(from_data.password,user["hashed_password"]):
+#         raise HTTPException(
+#               status_code=400,
+#               detail="Invalid username or password"
+#         )
+#     access_token =create_token({"sub":form_data.username})
+#     return{
+#           "acess_token":access_token,
+#           "token_type":"bearer"
+#     }
+
+ 
+ 
+#  #
+#  #  verify_token
+# def verify_token(token:str = Depends (oauth2_schema)):
+# payload = jwt.decode(token, SECRET_KEY,algorithms=[ALGORITHM])
+# username: str = payload.get("sub")
+# if username is None:
+# raise HTTPException(
+
+# )
+# status_code=401,
+# detail="Invalid token"
+# return username
+# except jwt.JWTError:
+# raise HTTPException(
+# status_code=401,
+# detail="Invalid token"
+# )
+
+# 0
+
+# #Protected Route
+
+# 1 @app.get("/protected")
+# def protected_route(username: str = Depends(verify_token)): 
+#   return {
+#      "message":"Hello you have access to this protected route!",
+#      "user":username
+
+# }
+
+# from fastapi import FastAPI , UploadFile,File,HTTPException
+# from fastapi.staticfiles import StaticFiles
+# import os
+# app = FastAPI()
+
+# #step-1: Ensure uploads folder exisits
+
+# UPLOAD_DIR = "uploads"
+# if not os.path.exists(UPLOAD_DIR):
+#     os.makedirs(UPLOAD_DIR)
+
+
+# #STEP -2:static files set-up
+# app.mount("/files",StaticFiles(directory=UPLOAD_DIR),name="files")
+
+# #STEP-3 Upload file api
+# @app.post("/upload")
+# def upload_file(file:UploadFile = File(...)):
+#     filename =file.filename
+#     file_path = os.path.join(UPLOAD_DIR,filename)
+
+
+#     if not filename:
+#         raise HTTPException(status_code=404,detail ="File not selected")
+
+#     with open(file_path,"wb") as buffer:
+#         shutil.copyfilejob(file.file,buffer)
+
+#         return{
+#             "message":"File Uploaded successfully",
+#             "fileName":filename,
+#             "file_url":f"http://127.0.0.8000/files/{filename}"
+#                             }
+
+# #step-4:Get File URL API
+# @app.get("files/{filename}")
+# def get_file(filename:str):
+#     file_path = os.path.join(UPLOAD_DIR,filename)
+#     if not os.path.exists(file_path):
+#         raise HTTPException(status_code=404,detail="File nt found")
+#     return{
+#             "file_url":f"http://127.0.0.8000/files/{filename}"
+           
+#     }
+
+# @app.get("/")
+# def home():
+#     return{
+#         "message":"File Uploaded api Running"
+#     }
+
+
+from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
+
+app = FastAPI()
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:5173"],  # React ka dev server URL
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+@app.get("/api/students")
+def get_students():
+    return {"students": ["Riya", "Aman", "Kabir"]}
