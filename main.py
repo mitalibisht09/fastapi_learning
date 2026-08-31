@@ -702,18 +702,71 @@ app= FastAPI()
 
 
 from fastapi import FastAPI
-from fastapi.middleware.cors import CORSMiddleware
+# from fastapi.middleware.cors import CORSMiddleware
 
 app = FastAPI()
 
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["http://localhost:5173"],  # React ka dev server URL
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
+# app.add_middleware(
+#     CORSMiddleware,
+#     allow_origins=["http://localhost:5173"],  # React ka dev server URL
+#     allow_credentials=True,
+#     allow_methods=["*"],
+#     allow_headers=["*"],
+# )
 
 @app.get("/api/students")
 def get_students():
     return {"students": ["Riya", "Aman", "Kabir"]}
+
+
+# import httpx
+
+# API_KEY = "1187c48e6ae1f45525ed6f7db5d55455"
+
+# @app.get("/api/weather/{city}")
+# async def get_weather(city: str):
+#     url = f"https://api.openweathermap.org/data/2.5/weather?q={city}&appid={API_KEY}&units=metric"
+    
+#     async with httpx.AsyncClient() as client:
+#         response = await client.get(url)
+    
+#     data = response.json()
+#     print(data)
+#     return {
+#         "city": city,
+#         "temperature": data["main"]["temp"],
+#         "description": data["weather"][0]["description"]
+#     }
+
+import requests
+from bs4 import BeautifulSoup
+
+url = "https://example.com"
+response = requests.get(url)
+
+soup = BeautifulSoup(response.text, "html.parser")
+
+print(soup.title.text)
+
+for link in soup.find_all("a"):
+    print(link.get("href"))
+
+from fastapi import FastAPI
+import requests
+from bs4 import BeautifulSoup
+
+app = FastAPI()
+
+@app.get("/api/scrape")
+def scrape_website(url: str):
+    response = requests.get(url)
+    soup = BeautifulSoup(response.text, "html.parser")
+    
+    title = soup.title.text if soup.title else "No title found"
+    links = [link.get("href") for link in soup.find_all("a")]
+    
+    return {
+        "title": title,
+        "total_links": len(links),
+        "links": links[:10]
+    }
