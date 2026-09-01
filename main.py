@@ -738,35 +738,102 @@ def get_students():
 #         "description": data["weather"][0]["description"]
 #     }
 
-import requests
-from bs4 import BeautifulSoup
+# import requests
+# from bs4 import BeautifulSoup
 
-url = "https://example.com"
-response = requests.get(url)
+# url = "https://example.com"
+# response = requests.get(url)
 
-soup = BeautifulSoup(response.text, "html.parser")
+# soup = BeautifulSoup(response.text, "html.parser")
 
-print(soup.title.text)
+# print(soup.title.text)
 
-for link in soup.find_all("a"):
-    print(link.get("href"))
+# for link in soup.find_all("a"):
+#     print(link.get("href"))
 
-from fastapi import FastAPI
-import requests
-from bs4 import BeautifulSoup
+# from fastapi import FastAPI
+# import requests
+# from bs4 import BeautifulSoup
+
+# app = FastAPI()
+
+# @app.get("/api/scrape")
+# def scrape_website(url: str):
+#     response = requests.get(url)
+#     soup = BeautifulSoup(response.text, "html.parser")
+    
+#     title = soup.title.text if soup.title else "No title found"
+#     links = [link.get("href") for link in soup.find_all("a")]
+    
+#     return {
+#         "title": title,
+#         "total_links": len(links),
+#         "links": links[:10]
+#     }
+# from fastapi import FastAPI, Query
+
+# app = FastAPI()
+
+# students_db = [
+#     {"id": 1, "name": "Riya"},
+#     {"id": 2, "name": "Aman"},
+#     {"id": 3, "name": "Kabir"},
+#     {"id": 4, "name": "Neha"},
+#     {"id": 5, "name": "Vikram"},
+#     {"id": 6, "name": "Priya"},
+#     {"id": 7, "name": "Rahul"},
+#     {"id": 8, "name": "Simran"},
+# ]
+
+# @app.get("/api/students")
+# def get_students(page: int = Query(1, ge=1), limit: int = Query(3, ge=1, le=10)):
+#     start = (page - 1) * limit
+#     end = start + limit
+    
+#     paginated_data = students_db[start:end]
+#     total_students = len(students_db)
+#     total_pages = (total_students + limit - 1) // limit
+    
+#     return {
+#         "page": page,
+#         "limit": limit,
+#         "total_students": total_students,
+#         "total_pages": total_pages,
+#         "data": paginated_data
+#     }
+
+# from fastapi import FastAPI
+# from cachetools import TTLCache
+# import time
+
+# app = FastAPI()
+
+# cache = TTLCache(maxsize=100, ttl=30)
+
+# @app.get("/api/slow-data")
+# def get_slow_data():
+#     if "students_data" in cache:
+#         return {"source": "cache", "data": cache["students_data"]}
+    
+#     time.sleep(3)
+#     data = {"students": ["Riya", "Aman", "Kabir"]}
+    
+#     cache["students_data"] = data
+    
+#     return {"source": "database", "data": data}
+
+from fastapi import FastAPI, Request
+from slowapi import Limiter, _rate_limit_exceeded_handler
+from slowapi.util import get_remote_address
+from slowapi.errors import RateLimitExceeded
 
 app = FastAPI()
 
-@app.get("/api/scrape")
-def scrape_website(url: str):
-    response = requests.get(url)
-    soup = BeautifulSoup(response.text, "html.parser")
-    
-    title = soup.title.text if soup.title else "No title found"
-    links = [link.get("href") for link in soup.find_all("a")]
-    
-    return {
-        "title": title,
-        "total_links": len(links),
-        "links": links[:10]
-    }
+limiter = Limiter(key_func=get_remote_address)
+app.state.limiter = limiter
+app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
+
+@app.get("/api/students")
+@limiter.limit("5/minute")
+def get_students(request: Request):
+    return {"students": ["Riya", "Aman", "Kabir"]}
